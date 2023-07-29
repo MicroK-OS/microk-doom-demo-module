@@ -1,7 +1,7 @@
 include ../../Makefile.inc
 
 MODDIR = .
-MODNAME = vendorid-productid-modname
+MODNAME = cafebabe-d004c0de-doom-demo-module
 
 COMMON_CFLAGS = -ffreestanding             \
 	 -fno-stack-protector          \
@@ -9,6 +9,7 @@ COMMON_CFLAGS = -ffreestanding             \
 	 -fno-builtin-g             \
 	 -I ../../mkmi/src/include    \
 	 -I ../../microk-kernel/src/include    \
+	 -I doom/include \
 	 -Wall                      \
 	 -Wextra                    \
 	 -Wno-write-strings         \
@@ -56,10 +57,17 @@ endif
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
+CSRC = $(call rwildcard,$(MODDIR),*.c)
 CPPSRC = $(call rwildcard,$(MODDIR),*.cpp)
-OBJS = $(patsubst $(MODDIR)/%.cpp, $(MODDIR)/%.o, $(CPPSRC))
+OBJS = $(patsubst $(MODDIR)/%.c, $(MODDIR)/%.o, $(CSRC))
+OBJS += $(patsubst $(MODDIR)/%.cpp, $(MODDIR)/%.o, $(CPPSRC))
 
 .PHONY: clean module
+
+$(MODDIR)/%.o: $(MODDIR)/%.c
+	@ mkdir -p $(@D)
+	@ echo !==== COMPILING MODULE $^ && \
+	$(CC) $(CFLAGS) -c $^ -o $@
 
 $(MODDIR)/%.o: $(MODDIR)/%.cpp
 	@ mkdir -p $(@D)
